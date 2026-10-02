@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: cancer-prediction
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt && python backend/train_model.py
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    autoDeploy: true

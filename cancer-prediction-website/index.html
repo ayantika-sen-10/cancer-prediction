@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cancer Cell Detection</title>
+    <meta
+      name="description"
+      content="Dashboard for classifying cancer cell samples as malignant or benign with six machine learning models."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="3.5" fill="currentColor" />
+            <circle cx="7.5" cy="9" r="1" fill="currentColor" stroke="none" />
+            <circle
+              cx="16.5"
+              cy="15.5"
+              r="1"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        </div>
+        <div>
+          Cancer Cell Detection <span class="sep long">/ Dashboard</span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="pill" id="api-status" role="status">
+        <span class="dot" id="api-dot"></span
+        ><span class="txt" id="api-text">Connecting…</span>
+      </div>
+      <button
+        class="icon-btn"
+        id="theme-toggle"
+        type="button"
+        aria-label="Switch between light and dark theme"
+        title="Switch theme"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="app">
+      <aside class="sidebar" aria-label="Sections">
+        <p class="nav-label">Dashboard</p>
+        <nav>
+          <a href="#overview" class="active"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="9" rx="1.5" />
+              <rect x="14" y="3" width="7" height="5" rx="1.5" />
+              <rect x="14" y="12" width="7" height="9" rx="1.5" />
+              <rect x="3" y="16" width="7" height="5" rx="1.5" /></svg
+            >Overview</a
+          >
+          <a href="#detect"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" /></svg
+            >Detect</a
+          >
+          <a href="#dataset"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <ellipse cx="12" cy="6" rx="8" ry="3" />
+              <path
+                d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"
+              /></svg
+            >Dataset</a
+          >
+          <a href="#models"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg
+            >Models</a
+          >
+          <a href="#about"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 11v5M12 8h.01" /></svg
+            >About</a
+          >
+        </nav>
+        <p class="side-note">
+          Educational college project. Results are demonstrations, not medical
+          diagnoses.
+        </p>
+      </aside>
+
+      <main>
+        <!-- ============ OVERVIEW ============ -->
+        <section id="overview" aria-labelledby="overview-h">
+          <div class="section-head">
+            <h2 id="overview-h">Overview</h2>
+            <p>
+              Six machine learning models classify a cell sample as
+              <b>malignant</b> or <b>benign</b> from two nucleus measurements.
+              Everything below is computed from the project's cancer cell
+              dataset.
+            </p>
+          </div>
+          <div class="hero">
+            <div class="card">
+              <div class="tile">
+                <span class="label">Best model accuracy</span>
+              </div>
+              <div class="hero-num num" id="hero-accuracy">–</div>
+              <div class="hero-label" id="hero-label">Loading…</div>
+            </div>
+            <div class="card">
+              <h3>Class balance</h3>
+              <p class="sub">
+                Share of malignant and benign samples in the dataset
+              </p>
+              <div
+                class="stack"
+                id="balance-bar"
+                role="img"
+                aria-label="Class balance bar"
+              ></div>
+              <div class="legend">
+                <span
+                  ><i class="key b"></i>Benign
+                  <b class="num" id="balance-b">–</b></span
+                >
+                <span
+                  ><i class="key m"></i>Malignant
+                  <b class="num" id="balance-m">–</b></span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="grid g-tiles" style="margin-top: 16px">
+            <div class="card tile">
+              <div class="label">Cell samples</div>
+              <div class="value num" id="kpi-rows">–</div>
+              <div class="hint">rows in the dataset</div>
+            </div>
+            <div class="card tile">
+              <div class="label">Malignant</div>
+              <div class="value num" id="kpi-malignant">–</div>
+              <div class="hint" id="kpi-malignant-hint">&nbsp;</div>
+            </div>
+            <div class="card tile">
+              <div class="label">Benign</div>
+              <div class="value num" id="kpi-benign">–</div>
+              <div class="hint" id="kpi-benign-hint">&nbsp;</div>
+            </div>
+            <div class="card tile">
+              <div class="label">Best AUC</div>
+              <div class="value num" id="kpi-auc">–</div>
+              <div class="hint" id="kpi-auc-hint">&nbsp;</div>
+            </div>
+            <div class="card tile">
+              <div class="label">Test samples</div>
+              <div class="value num" id="kpi-test">–</div>
+              <div class="hint" id="kpi-test-hint">&nbsp;</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ DETECT ============ -->
+        <section id="detect" aria-labelledby="detect-h">
+          <div class="section-head">
+            <h2 id="detect-h">Detect a cell</h2>
+            <p>
+              Enter the two measurements of a cell nucleus. The dashboard shows
+              the model's answer, how the other five models vote, the closest
+              known samples, and where your cell falls among all samples.
+            </p>
+          </div>
+          <div class="grid g-detect">
+            <div class="card">
+              <h3>Cell measurements</h3>
+              <p class="sub">
+                Use your own values or start from a typical sample
+              </p>
+              <div class="presets">
+                <button class="btn small" type="button" id="preset-benign">
+                  <i class="key b"></i>Typical benign
+                </button>
+                <button class="btn small" type="button" id="preset-malignant">
+                  <i class="key m"></i>Typical malignant
+                </button>
+              </div>
+              <form id="prediction-form" novalidate>
+                <div class="field">
+                  <label for="radius_mean">Radius mean</label>
+                  <input
+                    type="number"
+                    id="radius_mean"
+                    name="radius_mean"
+                    step="0.01"
+                    min="0"
+                    value="17.99"
+                    required
+                  />
+                  <p class="help">
+                    Mean of distances from the centre to points on the perimeter
+                  </p>
+                </div>
+                <div class="field">
+                  <label for="texture_mean">Texture mean</label>
+                  <input
+                    type="number"
+                    id="texture_mean"
+                    name="texture_mean"
+                    step="0.01"
+                    min="0"
+                    value="10.38"
+                    required
+                  />
+                  <p class="help">Standard deviation of gray-scale values</p>
+                </div>
+                <div class="field">
+                  <label for="model-select">Model</label>
+                  <select id="model-select" name="model">
+                    <option value="">Loading models…</option>
+                  </select>
+                </div>
+                <div class="btn-row">
+                  <button class="btn primary" type="submit" id="predict-btn">
+                    Detect cell type
+                  </button>
+                  <button class="btn" type="button" id="reset-btn">
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card" aria-live="polite">
+              <h3>Detection result</h3>
+              <p class="sub" id="result-sub">Waiting for a measurement</p>
+              <div id="result-empty" class="empty">
+                Fill in the measurements and press <b>Detect cell type</b>.
+              </div>
+              <div id="result-loading" class="hidden">
+                <div class="spinner" role="status" aria-label="Analyzing"></div>
+              </div>
+              <div
+                id="error-message"
+                class="error-box hidden"
+                role="alert"
+              ></div>
+              <div id="result-card" class="hidden">
+                <div class="result-top">
+                  <div class="badge" id="result-badge">
+                    <span id="result-icon"></span>
+                  </div>
+                  <div>
+                    <div
+                      class="muted"
+                      style="
+                        font-size: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                      "
+                    >
+                      Cell classification
+                    </div>
+                    <h4 id="diagnosis-result"></h4>
+                    <div class="muted" style="font-size: 13px">
+                      Confidence
+                      <b
+                        class="num"
+                        id="confidence-value"
+                        style="color: var(--text)"
+                      ></b>
+                      · <span id="model-used"></span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="prob-bar"
+                  id="prob-bar"
+                  role="img"
+                  aria-label="Probability split"
+                ></div>
+                <div class="prob-legend">
+                  <span
+                    ><i class="key b"></i>Benign
+                    <b class="num" id="benign-prob">0%</b></span
+                  >
+                  <span
+                    ><i class="key m"></i>Malignant
+                    <b class="num" id="malignant-prob">0%</b></span
+                  >
+                </div>
+                <p
+                  id="diagnosis-text"
+                  class="muted"
+                  style="margin-top: 10px; font-size: 13px"
+                ></p>
+                <div class="reading" id="reading"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid g-2" style="margin-top: 16px">
+            <div class="card">
+              <h3>Do the six models agree?</h3>
+              <p class="sub" id="consensus-summary">
+                Run a detection to compare all models on the same cell
+              </p>
+              <div class="table-wrap">
+                <table aria-label="Prediction of every model">
+                  <thead>
+                    <tr>
+                      <th>Model</th>
+                      <th>Says</th>
+                      <th>Split</th>
+                      <th class="r">Confidence</th>
+                    </tr>
+                  </thead>
+                  <tbody id="consensus-body">
+                    <tr>
+                      <td colspan="4" class="muted">No detection yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Closest known samples</h3>
+              <p class="sub">
+                The five training samples nearest to your cell (straight-line
+                distance, as K-Nearest Neighbors measures it)
+              </p>
+              <div class="table-wrap">
+                <table aria-label="Five nearest training samples">
+                  <thead>
+                    <tr>
+                      <th>Sample ID</th>
+                      <th class="r">Radius</th>
+                      <th class="r">Texture</th>
+                      <th>Class</th>
+                      <th class="r">Distance</th>
+                    </tr>
+                  </thead>
+                  <tbody id="neighbors-body">
+                    <tr>
+                      <td colspan="5" class="muted">No detection yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid g-2" style="margin-top: 16px">
+            <div class="card">
+              <h3>Where your cell sits</h3>
+              <p class="sub">
+                All 569 samples by radius and texture. Hover a point for its
+                values.
+              </p>
+              <div class="legend" style="margin-bottom: 8px">
+                <span><i class="key b"></i>Benign</span
+                ><span><i class="key m"></i>Malignant</span>
+                <span><i class="key you"></i>Your cell</span
+                ><span><i class="key nn"></i>Nearest 5</span>
+              </div>
+              <div
+                class="chart"
+                id="scatter-chart"
+                role="img"
+                aria-label="Scatter plot of radius versus texture for all samples"
+              ></div>
+            </div>
+            <div class="card">
+              <h3 id="map-title">Decision map</h3>
+              <p class="sub">
+                What the selected model answers for every radius and texture.
+                Blue side = benign, orange side = malignant, pale band = unsure.
+              </p>
+              <div class="map-wrap">
+                <canvas
+                  id="map-canvas"
+                  width="640"
+                  height="440"
+                  role="img"
+                  aria-label="Decision map of the selected model"
+                ></canvas>
+              </div>
+              <div class="ramp" aria-hidden="true"></div>
+              <div class="ramp-labels">
+                <span>Benign (P malignant 0%)</span><span>Unsure (50%)</span
+                ><span>Malignant (100%)</span>
+              </div>
+              <p
+                class="muted"
+                style="font-size: 12.5px; margin-top: 8px"
+                id="map-note"
+              ></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ DATASET ============ -->
+        <section id="dataset" aria-labelledby="dataset-h">
+          <div class="section-head">
+            <h2 id="dataset-h">Dataset</h2>
+            <p>
+              How the two measurements differ between benign and malignant
+              cells. The more the two shapes are apart, the easier the job for a
+              model.
+            </p>
+          </div>
+          <div class="grid g-2">
+            <div class="card">
+              <h3>Radius mean distribution</h3>
+              <p class="sub">Number of samples per radius range</p>
+              <div class="legend" style="margin-bottom: 8px">
+                <span><i class="key b"></i>Benign</span
+                ><span><i class="key m"></i>Malignant</span>
+              </div>
+              <div
+                class="chart"
+                id="hist-radius"
+                role="img"
+                aria-label="Histogram of radius mean by class"
+              ></div>
+            </div>
+            <div class="card">
+              <h3>Texture mean distribution</h3>
+              <p class="sub">Number of samples per texture range</p>
+              <div class="legend" style="margin-bottom: 8px">
+                <span><i class="key b"></i>Benign</span
+                ><span><i class="key m"></i>Malignant</span>
+              </div>
+              <div
+                class="chart"
+                id="hist-texture"
+                role="img"
+                aria-label="Histogram of texture mean by class"
+              ></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <h3>Statistics by class</h3>
+            <p class="sub" id="corr-note">
+              Summary of each measurement for benign and malignant samples
+            </p>
+            <div class="table-wrap">
+              <table aria-label="Statistics by class">
+                <thead>
+                  <tr>
+                    <th>Measurement</th>
+                    <th>Class</th>
+                    <th class="r">Samples</th>
+                    <th class="r">Mean</th>
+                    <th class="r">Median</th>
+                    <th class="r">Std dev</th>
+                    <th class="r">Min</th>
+                    <th class="r">Q1</th>
+                    <th class="r">Q3</th>
+                    <th class="r">Max</th>
+                  </tr>
+                </thead>
+                <tbody id="stats-body">
+                  <tr>
+                    <td colspan="10" class="muted">Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <details>
+              <summary>Show histogram data as a table</summary>
+              <div class="table-wrap" style="margin-top: 8px">
+                <table aria-label="Histogram bins">
+                  <thead>
+                    <tr>
+                      <th>Measurement</th>
+                      <th>Range</th>
+                      <th class="r">Benign</th>
+                      <th class="r">Malignant</th>
+                    </tr>
+                  </thead>
+                  <tbody id="hist-table-body"></tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- ============ MODELS ============ -->
+        <section id="models" aria-labelledby="models-h">
+          <div class="section-head">
+            <h2 id="models-h">Model performance</h2>
+            <p id="models-intro">
+              Every number is measured on samples the models never saw while
+              learning.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Accuracy by model</h3>
+            <p class="sub">
+              Share of held-out test samples classified correctly (bars start at
+              0%)
+            </p>
+            <div
+              class="chart"
+              id="accuracy-chart"
+              role="img"
+              aria-label="Bar chart of accuracy per model"
+            ></div>
+            <div class="table-wrap" style="margin-top: 12px">
+              <table aria-label="Model metrics">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th class="r">Accuracy</th>
+                    <th class="r">Precision (M)</th>
+                    <th class="r">Recall (M)</th>
+                    <th class="r">F1 (M)</th>
+                    <th class="r">AUC</th>
+                  </tr>
+                </thead>
+                <tbody id="metrics-body">
+                  <tr>
+                    <td colspan="6" class="muted">Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p
+              class="muted"
+              style="font-size: 12.5px; margin-top: 10px"
+              id="metrics-note"
+            ></p>
+          </div>
+          <div
+            class="grid g-models"
+            id="model-cards"
+            style="margin-top: 16px"
+          ></div>
+        </section>
+
+        <!-- ============ ABOUT ============ -->
+        <section id="about" aria-labelledby="about-h">
+          <div class="section-head">
+            <h2 id="about-h">About this project</h2>
+          </div>
+          <div class="card">
+            <ol class="steps">
+              <li>
+                <h4>Cancer cell dataset</h4>
+                <p>
+                  <span id="steps-rows">–</span> cell samples, each labelled
+                  malignant (M) or benign (B), with nucleus measurements.
+                </p>
+              </li>
+              <li>
+                <h4>Train the models</h4>
+                <p>
+                  <span id="steps-models">–</span> models learn from radius and
+                  texture, then are saved as <code>.pkl</code> files.
+                </p>
+              </li>
+              <li>
+                <h4>Flask API</h4>
+                <p>
+                  This page sends the two measurements to <code>/predict</code>;
+                  the backend loads the chosen model and answers.
+                </p>
+              </li>
+              <li>
+                <h4>Dashboard</h4>
+                <p>
+                  Results, charts and tables here are drawn from the API, never
+                  typed in by hand.
+                </p>
+              </li>
+            </ol>
+          </div>
+          <div class="grid g-2" style="margin-top: 16px">
+            <div class="card">
+              <h3>What the measurements mean</h3>
+              <div class="feat-grid">
+                <div>
+                  <b>Radius mean</b><br />Average distance from the centre of
+                  the nucleus to its edge. Larger nuclei are more often
+                  malignant.
+                </div>
+                <div>
+                  <b>Texture mean</b><br />Variation of gray-scale values inside
+                  the nucleus. More uneven texture is more often malignant.
+                </div>
+              </div>
+              <h3 style="margin-top: 16px">How to read the charts</h3>
+              <ul class="limits">
+                <li>
+                  <b>Accuracy</b>: share of all test samples classified
+                  correctly.
+                </li>
+                <li>
+                  <b>Precision (M)</b>: of the cells called malignant, how many
+                  truly were.
+                </li>
+                <li>
+                  <b>Recall (M)</b>: of the truly malignant cells, how many were
+                  found.
+                </li>
+                <li>
+                  <b>AUC</b>: how well a model ranks malignant above benign (1.0
+                  perfect, 0.5 coin flip).
+                </li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Limits to keep in mind</h3>
+              <ul class="limits">
+                <li>
+                  The models use only <b>two</b> of the dataset's measurements,
+                  so some malignant and benign cells look alike to them.
+                </li>
+                <li>
+                  There are no microscope images in this dataset, only numbers
+                  measured from them, so the charts plot measurements rather
+                  than pictures.
+                </li>
+                <li>
+                  Accuracy comes from one 80/20 split of
+                  <b id="about-rows">–</b> samples; a different split would give
+                  slightly different numbers.
+                </li>
+                <li>
+                  This is a college project. It is <b>not</b> a medical
+                  diagnosis and no substitute for a qualified healthcare
+                  provider.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <p class="footer" style="margin-top: 18px">
+            <b>Disclaimer:</b> educational demonstration only. Cancer Cell
+            Detection · scikit-learn models served by Flask.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <div class="tooltip" id="tooltip" role="tooltip"></div>
+    <script src="charts.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
