@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.unlazy/
+.unlazy-hook-state.json
+backend/models/*.pkl
+.claude/
+tests/
